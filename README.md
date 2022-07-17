@@ -1,0 +1,2 @@
+# qautomata
+Quantum cellular automata
