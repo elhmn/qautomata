@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use num::complex::Complex;
+use std::collections::HashMap;
 
 pub struct Coordinates {
     pub x: i32,
