@@ -15,4 +15,12 @@ pub struct Configuration {
     pub living_cells: HashMap<Coordinates, bool>,
 }
 
-pub type Universe = Vec<Configuration>;
+pub type State = Vec<Configuration>;
+
+// The Operator defines a 16x16 grid of complex number
+pub type Operator = [[Complex<f64>; 16]; 16];
+
+pub struct Universe {
+    pub state: State,
+    pub operator: Operator,
+}
