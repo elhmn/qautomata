@@ -16,12 +16,10 @@ impl Universe {
 
 impl Configuration {
     pub fn step(&mut self, operator: Operator, is_even_step: bool) -> Vec<Configuration> {
-        let mut configurations: Vec<Configuration> = Vec::new();
-
-        configurations.push(Configuration {
+        let configurations: Vec<Configuration> = vec![Configuration {
             amplitude: self.amplitude,
             living_cells: HashMap::new(),
-        });
+        }];
 
         for (coordinates, is_already_computed) in self.living_cells.iter() {
             if *is_already_computed {
