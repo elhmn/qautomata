@@ -34,8 +34,8 @@ pub struct Configuration {
 
 pub type State = Vec<Configuration>;
 
-// The Operator defines a 16x16 grid of complex number
-pub type Operator = [[Complex<f64>; 16]; 16];
+// The Rules defines a 16x16 grid of complex number
+pub type Rules = [[Complex<f64>; 16]; 16];
 
 // The is_even_step attribute is used to determine the square in which
 // the rules of the universe apply for a given living cell
@@ -44,7 +44,7 @@ pub type Operator = [[Complex<f64>; 16]; 16];
 pub struct Universe {
     pub state: State,
     pub is_even_step: bool,
-    pub operator: Operator,
+    pub rules: Rules,
 }
 
 impl Universe {
@@ -52,7 +52,7 @@ impl Universe {
         Self {
             state: State::new(),
             is_even_step: true,
-            operator: [[Complex::new(0.0, 0.0); 16]; 16],
+            rules: [[Complex::new(0.0, 0.0); 16]; 16],
         }
     }
 }

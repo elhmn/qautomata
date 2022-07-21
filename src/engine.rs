@@ -6,8 +6,8 @@ pub fn run() {
         //This should be replaced by an State::new(state_file),
         state: State::new(),
         is_even_step: true,
-        //This should be replaced by an Operator::new(operator_file),
-        operator: [[Complex::new(0.0, 0.0); 16]; 16],
+        //This should be replaced by an Rules::new(rules_file),
+        rules: [[Complex::new(0.0, 0.0); 16]; 16],
     };
 
     // The counter `n` is temporary until we implement

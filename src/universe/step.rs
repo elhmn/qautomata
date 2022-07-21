@@ -7,7 +7,7 @@ impl Universe {
         let mut new_state: State = State::new();
 
         for configuration in self.state.iter_mut() {
-            new_state.append(&mut configuration.step(self.operator, self.is_even_step));
+            new_state.append(&mut configuration.step(self.rules, self.is_even_step));
         }
 
         self.state = new_state;
@@ -15,7 +15,7 @@ impl Universe {
 }
 
 impl Configuration {
-    pub fn step(&mut self, operator: Operator, is_even_step: bool) -> Vec<Configuration> {
+    pub fn step(&mut self, rules: Rules, is_even_step: bool) -> Vec<Configuration> {
         let configurations: Vec<Configuration> = vec![Configuration {
             amplitude: self.amplitude,
             living_cells: HashMap::new(),
@@ -67,7 +67,7 @@ impl Configuration {
                     .contains_key(&Coordinates { x: x_min, y: y_min }),
             ];
 
-            compute_rule(operator, input_square_state);
+            compute_rule(rules, input_square_state);
             // To be continued when compute_rule() is implemented then tested
         }
 
@@ -75,4 +75,4 @@ impl Configuration {
     }
 }
 
-fn compute_rule(_operator: Operator, _input_square_state: [bool; 4]) {}
+fn compute_rule(_rules: Rules, _input_square_state: [bool; 4]) {}
