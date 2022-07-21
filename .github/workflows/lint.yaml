@@ -21,3 +21,4 @@ jobs:
         name: "check lint with clippy"
         with:
           command: clippy
+          args: -- -D warnings
