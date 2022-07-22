@@ -1,14 +1,7 @@
 use crate::universe::types::*;
-use num::complex::Complex;
 
 pub fn run() {
-    let mut universe = Universe {
-        //This should be replaced by an State::new(state_file),
-        state: State::new(),
-        is_even_step: true,
-        //This should be replaced by an Rules::new(rules_file),
-        rules: [[Complex::new(0.0, 0.0); 16]; 16],
-    };
+    let mut universe = Universe::new_from_files("./fixtures/state1.json");
 
     // The counter `n` is temporary until we implement
     // a cleaner way to stop the loop
