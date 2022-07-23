@@ -12,18 +12,24 @@ impl Universe {
         }
 
         self.state = new_state;
+        self.is_even_step = !self.is_even_step;
     }
 }
 
 impl Configuration {
     pub fn step(&mut self, rules: Rules, is_even_step: bool) -> Vec<Configuration> {
-        let configurations: Vec<Configuration> = vec![Configuration {
+        let mut new_configurations: Vec<Configuration> = vec![Configuration {
             amplitude: self.amplitude,
             living_cells: HashMap::new(),
         }];
 
-        for (coordinates, is_already_computed) in self.living_cells.iter() {
-            if *is_already_computed {
+        for coordinates in self
+            .living_cells
+            .keys()
+            .cloned()
+            .collect::<Vec<Coordinates>>()
+        {
+            if self.living_cells.get(&coordinates) == Some(&true) {
                 continue;
             }
 
@@ -57,28 +63,162 @@ impl Configuration {
                 y_min = coordinates.y - if coordinates.y % 2 == 1 { 0 } else { 1 };
             }
 
-            let input_square_state: [bool; 4] = [
-                self.living_cells
-                    .contains_key(&Coordinates { x: x_min, y: y_min }),
-                self.living_cells.contains_key(&Coordinates {
+            // The square_state contains 4 bool, one for each cell of the square
+            // The boolean is true if the cell is alive and false otherwise
+            // Cell order in the configuration compared to the square_state array:
+            // [0] [1] -> configuration
+            // [2] [3]
+            //
+            // [0 1 2 3] -> square_state
+            //
+            // The values are initialized at false and updated to true below
+            // when checking if the correspondings cells are alive
+            let mut square_state: [bool; 4] = [false, false, false, false];
+
+            // Get the 4 living cells of the square [0] [1]
+            //                                      [2] [3]
+            //
+            // - Mark the living cells as computed during this step
+            //    in order to not compute them again in the loop
+            // - Mark the cells alive in the `square_state` array
+            //    if we find them in the list of living cells (see comment above)
+            {
+                let living_cell_0 = self
+                    .living_cells
+                    .get_mut(&Coordinates { x: x_min, y: y_min });
+                if let Some(lc0) = living_cell_0 {
+                    *lc0 = true;
+                    square_state[0] = true;
+                }
+            }
+            {
+                let living_cell_1 = self.living_cells.get_mut(&Coordinates {
                     x: x_min,
                     y: y_min + 1,
-                }),
-                self.living_cells.contains_key(&Coordinates {
+                });
+                if let Some(lc1) = living_cell_1 {
+                    *lc1 = true;
+                    square_state[1] = true;
+                }
+            }
+            {
+                let living_cell_2 = self.living_cells.get_mut(&Coordinates {
                     x: x_min + 1,
                     y: y_min,
-                }),
-                self.living_cells.contains_key(&Coordinates {
+                });
+                if let Some(lc2) = living_cell_2 {
+                    *lc2 = true;
+                    square_state[2] = true;
+                }
+            }
+            {
+                let living_cell_3 = self.living_cells.get_mut(&Coordinates {
                     x: x_min + 1,
                     y: y_min + 1,
-                }),
-            ];
+                });
+                if let Some(lc3) = living_cell_3 {
+                    *lc3 = true;
+                    square_state[3] = true;
+                }
+            }
 
-            compute_rules(rules, input_square_state);
-            // To be continued when compute_rule() is implemented then tested
+            let new_square_states: Vec<(Complex<f64>, [bool; 4])> =
+                compute_rules(rules, square_state);
+
+            // Think about what to do here, probably an error
+            if new_square_states.is_empty() {
+                continue;
+            }
+
+            // For each new_configuration:
+            //     - For each new_square_state except the first one:
+            //         - We create a copy of the new_configuration, apply new_square_state and
+            //           add it to new_configurations (we won't iter on it on the main
+            //           loop)
+            //     - Then we apply the first new_square_state to the new_configuation
+            //
+            // Apply a square_state to a configuration:
+            //     - multiply the amplitude of the configuration with the one of the square_state
+            //     - add each living_cell of the square_state in the living_cells of the
+            //       configuration
+            for i in 0..new_configurations.len() {
+                for new_square_state in new_square_states.iter().skip(1) {
+                    let mut new_configuration: Configuration = new_configurations[i].clone();
+
+                    new_configuration.amplitude *= new_square_state.0;
+                    if new_square_state.1[0] {
+                        new_configuration
+                            .living_cells
+                            .insert(Coordinates { x: x_min, y: y_min }, false);
+                    }
+                    if new_square_state.1[1] {
+                        new_configuration.living_cells.insert(
+                            Coordinates {
+                                x: x_min,
+                                y: y_min + 1,
+                            },
+                            false,
+                        );
+                    }
+                    if new_square_state.1[2] {
+                        new_configuration.living_cells.insert(
+                            Coordinates {
+                                x: x_min + 1,
+                                y: y_min,
+                            },
+                            false,
+                        );
+                    }
+                    if new_square_state.1[3] {
+                        new_configuration.living_cells.insert(
+                            Coordinates {
+                                x: x_min + 1,
+                                y: y_min + 1,
+                            },
+                            false,
+                        );
+                    }
+
+                    new_configurations.push(new_configuration);
+                }
+
+                new_configurations[i].amplitude *= new_square_states[0].0;
+                if new_square_states[0].1[0] {
+                    new_configurations[i]
+                        .living_cells
+                        .insert(Coordinates { x: x_min, y: y_min }, false);
+                }
+                if new_square_states[0].1[1] {
+                    new_configurations[i].living_cells.insert(
+                        Coordinates {
+                            x: x_min,
+                            y: y_min + 1,
+                        },
+                        false,
+                    );
+                }
+                if new_square_states[0].1[2] {
+                    new_configurations[i].living_cells.insert(
+                        Coordinates {
+                            x: x_min + 1,
+                            y: y_min,
+                        },
+                        false,
+                    );
+                }
+                if new_square_states[0].1[3] {
+                    new_configurations[i].living_cells.insert(
+                        Coordinates {
+                            x: x_min + 1,
+                            y: y_min + 1,
+                        },
+                        false,
+                    );
+                }
+            }
         }
 
-        configurations
+        new_configurations
     }
 }
 
@@ -160,12 +300,12 @@ mod tests {
             Test {
                 rules,
                 ss: [false, true, false, false],
-                exp: vec![(Complex::new(1.0, 0.0), [true, false, false, true])],
+                exp: vec![(Complex::new(1.0, 0.0), [false, false, false, true])],
             },
             Test {
                 rules,
                 ss: [false, false, false, true],
-                exp: vec![(Complex::new(1.0, 0.0), [false, false, false, true])],
+                exp: vec![(Complex::new(1.0, 0.0), [false, false, true, false])],
             },
         ];
 
