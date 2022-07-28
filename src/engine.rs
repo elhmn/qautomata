@@ -7,5 +7,8 @@ pub fn run() {
     // a cleaner way to stop the loop
     for _n in 0..10 {
         universe.step();
+        if universe.state.len() > 128 {
+            universe.measure();
+        }
     }
 }
