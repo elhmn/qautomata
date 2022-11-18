@@ -5,7 +5,7 @@ use serde_with::serde_as;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 
-#[derive(Serialize, Deserialize, Clone, Hash, Eq, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct Coordinates {
     pub x: i32,
     pub y: i32,
@@ -42,9 +42,10 @@ pub type Rules = [[Complex<f64>; 16]; 16];
 // The is_even_step attribute is used to determine the square in which
 // the rules of the universe apply for a given living cell
 // It is true if the universe is in an even step and false othrerwise
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Universe {
     pub state: State,
+    pub combined_state: HashMap<Coordinates, f64>,
     pub is_even_step: bool,
     pub rules: Rules,
 }
@@ -53,6 +54,7 @@ impl Universe {
     pub fn new() -> Self {
         Self {
             state: State::new(),
+            combined_state: HashMap::new(),
             is_even_step: true,
             rules: [[Complex::new(0.0, 0.0); 16]; 16],
         }
@@ -63,6 +65,7 @@ impl Universe {
         let rules = get_test_rules();
         Self {
             state,
+            combined_state: HashMap::new(),
             rules,
             is_even_step: true,
         }
@@ -143,9 +146,9 @@ pub fn get_test_rules() -> Rules {
             c(0., 0.),
             c(0., 0.),
             c(0., 0.),
-            c(1. / 2.0_f64.sqrt(), 0.),
+            c(1., 1.),
             c(0., 0.),
-            c(1. / 2.0_f64.sqrt(), 0.),
+            c(0., 0.),
             c(0., 0.),
             c(0., 0.),
         ],
@@ -249,7 +252,7 @@ pub fn get_test_rules() -> Rules {
             c(1.0 / 2.0_f64.sqrt(), 0.),
             c(0., 0.),
             c(0., 0.),
-            c(1.0 / 2.0_f64.sqrt(), 0.),
+            c(-1.0 / 2.0_f64.sqrt(), 0.),
             c(0., 0.),
             c(0., 0.),
             c(0., 0.),
@@ -305,9 +308,9 @@ pub fn get_test_rules() -> Rules {
             c(0., 0.),
             c(0., 0.),
             c(0., 0.),
-            c(1.0 / 2.0_f64.sqrt(), 0.),
             c(0., 0.),
-            c(1.0 / 2.0_f64.sqrt(), 0.),
+            c(0., 0.),
+            c(1., 0.),
             c(0., 0.),
             c(0., 0.),
         ],

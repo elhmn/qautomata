@@ -5,19 +5,36 @@ use super::types::*;
 
 impl Universe {
     pub fn step(&mut self) {
+        let old_state_len = self.state.len();
         let mut new_state: State = State::new();
+        let mut new_combined_state: HashMap<Coordinates, f64> = HashMap::new();
 
         for configuration in self.state.iter_mut() {
-            new_state.append(&mut configuration.step(self.rules, self.is_even_step));
+            new_state.append(&mut configuration.step(
+                self.rules,
+                self.is_even_step,
+                &mut new_combined_state,
+            ));
         }
 
         self.state = new_state;
+        self.combined_state = new_combined_state;
         self.is_even_step = !self.is_even_step;
+
+        // Interferences can happen only if new superpositions are created during the step
+        if self.state.len() > old_state_len {
+            self.solve_interference();
+        }
     }
 }
 
 impl Configuration {
-    pub fn step(&mut self, rules: Rules, is_even_step: bool) -> Vec<Configuration> {
+    pub fn step(
+        &mut self,
+        rules: Rules,
+        is_even_step: bool,
+        new_combined_state: &mut HashMap<Coordinates, f64>,
+    ) -> Vec<Configuration> {
         let mut new_configurations: Vec<Configuration> = vec![Configuration {
             amplitude: self.amplitude,
             living_cells: HashMap::new(),
@@ -150,6 +167,10 @@ impl Configuration {
                         new_configuration
                             .living_cells
                             .insert(Coordinates { x: x_min, y: y_min }, false);
+
+                        *new_combined_state
+                            .entry(Coordinates { x: x_min, y: y_min })
+                            .or_insert(0.0) += new_configuration.amplitude.norm_sqr();
                     }
                     if new_square_state.1[1] {
                         new_configuration.living_cells.insert(
@@ -159,6 +180,13 @@ impl Configuration {
                             },
                             false,
                         );
+
+                        *new_combined_state
+                            .entry(Coordinates {
+                                x: x_min,
+                                y: y_min + 1,
+                            })
+                            .or_insert(0.0) += new_configuration.amplitude.norm_sqr();
                     }
                     if new_square_state.1[2] {
                         new_configuration.living_cells.insert(
@@ -168,6 +196,13 @@ impl Configuration {
                             },
                             false,
                         );
+
+                        *new_combined_state
+                            .entry(Coordinates {
+                                x: x_min + 1,
+                                y: y_min,
+                            })
+                            .or_insert(0.0) += new_configuration.amplitude.norm_sqr();
                     }
                     if new_square_state.1[3] {
                         new_configuration.living_cells.insert(
@@ -177,6 +212,13 @@ impl Configuration {
                             },
                             false,
                         );
+
+                        *new_combined_state
+                            .entry(Coordinates {
+                                x: x_min + 1,
+                                y: y_min + 1,
+                            })
+                            .or_insert(0.0) += new_configuration.amplitude.norm_sqr();
                     }
 
                     new_configurations.push(new_configuration);
@@ -187,6 +229,10 @@ impl Configuration {
                     new_configurations[i]
                         .living_cells
                         .insert(Coordinates { x: x_min, y: y_min }, false);
+
+                    *new_combined_state
+                        .entry(Coordinates { x: x_min, y: y_min })
+                        .or_insert(0.0) += new_configurations[i].amplitude.norm_sqr();
                 }
                 if new_square_states[0].1[1] {
                     new_configurations[i].living_cells.insert(
@@ -196,6 +242,13 @@ impl Configuration {
                         },
                         false,
                     );
+
+                    *new_combined_state
+                        .entry(Coordinates {
+                            x: x_min,
+                            y: y_min + 1,
+                        })
+                        .or_insert(0.0) += new_configurations[i].amplitude.norm_sqr();
                 }
                 if new_square_states[0].1[2] {
                     new_configurations[i].living_cells.insert(
@@ -205,6 +258,13 @@ impl Configuration {
                         },
                         false,
                     );
+
+                    *new_combined_state
+                        .entry(Coordinates {
+                            x: x_min + 1,
+                            y: y_min,
+                        })
+                        .or_insert(0.0) += new_configurations[i].amplitude.norm_sqr();
                 }
                 if new_square_states[0].1[3] {
                     new_configurations[i].living_cells.insert(
@@ -214,6 +274,13 @@ impl Configuration {
                         },
                         false,
                     );
+
+                    *new_combined_state
+                        .entry(Coordinates {
+                            x: x_min + 1,
+                            y: y_min + 1,
+                        })
+                        .or_insert(0.0) += new_configurations[i].amplitude.norm_sqr();
                 }
             }
         }
