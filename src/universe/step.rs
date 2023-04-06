@@ -354,6 +354,19 @@ mod tests {
     use num::complex::Complex;
 
     #[test]
+    fn test_step() {
+        let state_file = "./fixtures/state_2_adjacent_cells.json";
+        let mut universe = super::Universe::new_from_files(state_file).unwrap();
+        universe.step();
+        //we should be at a odd step
+        assert!(!universe.is_even_step);
+        assert_eq!(universe.state.len(), 1);
+        universe.step();
+        //we should be at an even step
+        assert!(universe.is_even_step);
+    }
+
+    #[test]
     fn test_compute_rule() {
         let rules = types::get_test_rules();
 
