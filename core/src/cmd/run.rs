@@ -1,4 +1,3 @@
-use crate::engine;
 use clap::Args;
 
 #[derive(Args, Debug)]
@@ -9,5 +8,5 @@ pub struct RunCmd {
 }
 
 pub fn run(args: &RunCmd) {
-    engine::run(&args.state_file);
+    println!("Running with state file: {:?}", args.state_file);
 }
