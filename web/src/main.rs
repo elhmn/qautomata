@@ -9,8 +9,9 @@ fn main() {
     nannou::app(model).update(update).run();
 }
 
+#[warn(dead_code)]
 struct Model {
-    win_id: WindowId,
+    _win_id: WindowId,
     universe: Universe,
 }
 
@@ -27,7 +28,10 @@ fn model(app: &App) -> Model {
     let state_file = "./core/fixtures/state_2_diagonal_cells.json";
     let universe = Universe::new_from_files(state_file).unwrap();
 
-    Model { win_id, universe }
+    Model {
+        _win_id: win_id,
+        universe,
+    }
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
@@ -45,7 +49,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let universe = &model.universe;
     let draw = app.draw();
 
-    let gray = Color::new(22. / 255., 27. / 255., 34. / 255., 255. / 255.);
+    let gray = Color::new(22. / 255., 27. / 255., 34. / 255., 1.);
     draw.background().color(gray);
     //     draw.background().color(WHITE);
     let gdraw = draw.scale_y(-1.0).x_y(

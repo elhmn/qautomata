@@ -51,6 +51,12 @@ pub struct Universe {
     pub rules: Rules,
 }
 
+impl Default for Universe {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Universe {
     pub fn new() -> Self {
         // Unique configuration with no living cell
