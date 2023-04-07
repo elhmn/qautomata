@@ -1,4 +1,4 @@
-use crate::universe::types;
+use core::universe::types;
 use clap::Args;
 use num::complex::Complex;
 use rand::Rng;
