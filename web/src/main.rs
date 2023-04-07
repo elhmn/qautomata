@@ -1,23 +1,53 @@
-use nannou::{prelude::*, draw::mesh::vertex::Color};
+use core::universe::types::{Coordinates, Universe};
+use nannou::{draw::mesh::vertex::Color, prelude::*};
 
 const WIDTH: u32 = 800;
 const HEIGHT: u32 = 600;
+const STROKE_WEIGHT: f32 = 0.2;
 
 fn main() {
-    nannou::sketch(view).size(WIDTH, HEIGHT).run();
+    nannou::app(model).update(update).run();
 }
 
-fn view(app: &App, frame: Frame) {
-    let draw = app.draw();
+struct Model {
+    win_id: WindowId,
+    universe: Universe,
+}
 
+fn model(app: &App) -> Model {
+    let win_id = app
+        .new_window()
+        .title(app.exe_name().unwrap())
+        .size(WIDTH, HEIGHT)
+        .view(view)
+        .build()
+        .unwrap();
+
+    //Create a universe from a file
+    let state_file = "./core/fixtures/state_2_diagonal_cells.json";
+    let universe = Universe::new_from_files(state_file).unwrap();
+
+    Model { win_id, universe }
+}
+
+fn update(_app: &App, model: &mut Model, _update: Update) {
+    if model.universe.state.len() > 128 {
+        model.universe.measure();
+    }
+    model.universe.step();
+}
+
+fn view(app: &App, model: &Model, frame: Frame) {
     let col = 100;
     let row = 100;
     let s_x = 30.;
     let s_y = 30.;
+    let universe = &model.universe;
+    let draw = app.draw();
 
-//     let gray = Color::new(22. / 255., 27. / 255., 34. / 255. ,255. / 255.);
-//     draw.background().color(gray);
-    draw.background().color(WHITE);
+    let gray = Color::new(22. / 255., 27. / 255., 34. / 255., 255. / 255.);
+    draw.background().color(gray);
+    //     draw.background().color(WHITE);
     let gdraw = draw.scale_y(-1.0).x_y(
         s_x / 2. - (WIDTH as f32) / 2.0,
         s_y / 2. - (HEIGHT as f32) / 2.0,
@@ -25,26 +55,28 @@ fn view(app: &App, frame: Frame) {
 
     for i in 0..col {
         for j in 0..row {
-            let r = random_range(0, 10);
-            if r >= 5 {
-                gdraw
-//                     .ellipse()
-                  .rect()
-                    .no_fill()
-//                     .stroke(BLACK)
-//                     .stroke_weight(2.)
-                    .x_y(i as f32 * (s_x), j as f32 * (s_y))
-                    .w_h(s_x, s_y);
-            } else {
-                let green = Color::new(0.0, random_range(0.7, 0.1), 0.0, random_range(0., 1.));
-                gdraw
-                    .rect()
-//                     .ellipse()
-//                     .stroke(BLACK)
-//                     .stroke_weight(2.)
-                    .x_y(i as f32 * (s_x), j as f32 * (s_y))
-                    .w_h(s_x, s_y)
-                    .color(green);
+            match universe.combined_state.get(&Coordinates { x: i, y: j }) {
+                Some(probability) => {
+                    //draw living cells
+                    let green = Color::new(0.0, 1., 0.0, *probability as f32);
+                    gdraw
+                        .rect()
+                        .stroke(GRAY)
+                        .stroke_weight(STROKE_WEIGHT)
+                        .x_y(i as f32 * (s_x), j as f32 * (s_y))
+                        .w_h(s_x, s_y)
+                        .color(green);
+                }
+                None => {
+                    //Draw dead cells
+                    gdraw
+                        .rect()
+                        .no_fill()
+                        .stroke(GRAY)
+                        .stroke_weight(STROKE_WEIGHT)
+                        .x_y(i as f32 * (s_x), j as f32 * (s_y))
+                        .w_h(s_x, s_y);
+                }
             }
         }
     }
