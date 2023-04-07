@@ -1,5 +1,5 @@
 [workspace]
-members = [ "core", "nannou" ]
+members = [ "core", "web" ]
 
 # Required for wgpu v0.10 feature resolution.
 resolver = "2"
