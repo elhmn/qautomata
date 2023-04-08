@@ -1,5 +1,5 @@
-use crate::universe::types;
 use clap::Args;
+use core::universe::types;
 use num::complex::Complex;
 use rand::Rng;
 use std::collections::HashMap;
@@ -44,5 +44,5 @@ pub fn generate(_cmd: &GenCmd) {
 
     state.push(configuration);
     let serialized_state = serde_json::to_string(&state).unwrap();
-    println!("{}", serialized_state);
+    println!("{serialized_state}");
 }
