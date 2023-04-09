@@ -1,7 +1,7 @@
 # You must change these to your own details.
 [package]
-name = "ui"
-description = "ui for qautomata"
+name = "web"
+description = "web for qautomata"
 version = "0.0.1"
 authors = ["Git-Math", "elhmn"]
 categories = ["wasm"]

@@ -1,4 +1,4 @@
-qautomata ui
+qautomata web ui
 
 ## files
 ```
