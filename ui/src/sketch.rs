@@ -5,14 +5,51 @@ use nannou::wgpu::{Backends, DeviceDescriptor, Limits};
 use std::cell::RefCell;
 
 pub struct Model {
-    pub is_web: bool,
+    pub win_w: f32,
+    pub win_h: f32,
+    pub block_size: f32,
+    pub block_stroke: f32,
+    pub cols: i32,
+    pub rows: i32,
+    pub is_webapp: bool,
     pub universe: Universe,
 }
 
-const STROKE_WEIGHT: f32 = 0.2;
+impl Model {
+    pub fn new(app: &App, is_webapp: bool) -> Self {
+        //Create a universe from a file
+        let universe: Universe = if is_webapp {
+            Universe::new_from_str(include_str!(
+                "../../core/fixtures/state_2_diagonal_cells.json"
+            ))
+            .unwrap()
+        } else {
+            let state_file = "./core/fixtures/state_2_diagonal_cells.json";
+            Universe::new_from_files(state_file).unwrap()
+        };
+
+        let win_w = app.window_rect().w();
+        let win_h = app.window_rect().h();
+        let block_size = 30.;
+        let block_stroke = 0.2;
+        let cols = (win_w / block_size).ceil() as i32;
+        let rows = (win_h / block_size).ceil() as i32;
+
+        Self {
+            win_w,
+            win_h,
+            block_size,
+            block_stroke,
+            cols,
+            rows,
+            is_webapp,
+            universe,
+        }
+    }
+}
 
 fn update(app: &App, model: &mut Model, _update: Update) {
-    let frame_to_skip = if model.is_web { 5 } else { 10 };
+    let frame_to_skip = 10;
     // Since we are unable to set the frame rate of the nannou app
     // we use this trick to skip some frames in order to slow down
     // the simulation. You can find out more in this comment: https://github.com/nannou-org/nannou/issues/708#issuecomment-1047032678
@@ -27,24 +64,20 @@ fn update(app: &App, model: &mut Model, _update: Update) {
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
-    let window_width = app.window_rect().w();
-    let window_height = app.window_rect().h();
-    let s_x = 30.;
-    let s_y = 30.;
-    let cols = (window_width / s_x).ceil() as i32;
-    let rows = (window_height / s_y).ceil() as i32;
     let universe = &model.universe;
     let draw = app.draw();
+    let m = &model;
 
     let gray = Color::new(22. / 255., 27. / 255., 34. / 255., 1.);
     draw.background().color(gray);
+
     let gdraw = draw.scale_y(-1.0).x_y(
-        s_x / 2. - window_width / 2.0,
-        s_y / 2. - window_height / 2.0,
+        m.block_size / 2. - m.win_w / 2.0,
+        m.block_size / 2. - m.win_h / 2.0,
     );
 
-    for i in 0..cols {
-        for j in 0..rows {
+    for i in 0..m.cols {
+        for j in 0..m.rows {
             match universe.combined_state.get(&Coordinates { x: i, y: j }) {
                 Some(probability) => {
                     //draw living cells
@@ -52,9 +85,9 @@ fn view(app: &App, model: &Model, frame: Frame) {
                     gdraw
                         .rect()
                         .stroke(GRAY)
-                        .stroke_weight(STROKE_WEIGHT)
-                        .x_y(i as f32 * (s_x), j as f32 * (s_y))
-                        .w_h(s_x, s_y)
+                        .stroke_weight(m.block_stroke)
+                        .x_y(i as f32 * (m.block_size), j as f32 * (m.block_size))
+                        .w_h(m.block_size, m.block_size)
                         .color(green);
                 }
                 None => {
@@ -62,9 +95,9 @@ fn view(app: &App, model: &Model, frame: Frame) {
                         .rect()
                         .no_fill()
                         .stroke(GRAY)
-                        .stroke_weight(STROKE_WEIGHT)
-                        .x_y(i as f32 * (s_x), j as f32 * (s_y))
-                        .w_h(s_x, s_y);
+                        .stroke_weight(m.block_stroke)
+                        .x_y(i as f32 * (m.block_size), j as f32 * (m.block_size))
+                        .w_h(m.block_size, m.block_size);
                 }
             }
         }
@@ -74,27 +107,15 @@ fn view(app: &App, model: &Model, frame: Frame) {
     draw.to_frame(app, &frame).unwrap();
 }
 
-pub async fn run_app(is_web: bool, width: u32, height: u32) {
+pub async fn run_app(is_webapp: bool, width: u32, height: u32) {
     // Since ModelFn is not a closure we need this workaround to pass the calculated model
     thread_local!(static MODEL: RefCell<Option<Model>> = Default::default());
-
-    //Create a universe from a file
-    let universe: Universe = if is_web {
-        Universe::new_from_str(include_str!(
-            "../../core/fixtures/state_2_diagonal_cells.json"
-        ))
-        .unwrap()
-    } else {
-        let state_file = "./core/fixtures/state_2_diagonal_cells.json";
-        Universe::new_from_files(state_file).unwrap()
-    };
-
-    let model = Model { is_web, universe };
-    MODEL.with(|m| m.borrow_mut().replace(model));
 
     app::Builder::new_async(move |app| {
         Box::new(async move {
             create_window(app, width, height).await;
+            let model = Model::new(app, is_webapp);
+            MODEL.with(|m| m.borrow_mut().replace(model));
             MODEL.with(|m| m.borrow_mut().take().unwrap())
         })
     })
@@ -118,14 +139,6 @@ async fn create_window(app: &App, width: u32, height: u32) {
         .device_descriptor(device_desc)
         .title("nannou web test")
         .size(width, height)
-        // .raw_event(raw_event)
-        // .key_pressed(key_pressed)
-        // .key_released(key_released)
-        // .mouse_pressed(mouse_pressed)
-        // .mouse_moved(mouse_moved)
-        // .mouse_released(mouse_released)
-        // .mouse_wheel(mouse_wheel)
-        // .touch(touch)
         .view(view)
         .build_async()
         .await
