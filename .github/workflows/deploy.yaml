@@ -1,0 +1,51 @@
+name: Deploy Github pages
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - deploy-on-github-pages #to remove before merge
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy-to-github-pages:
+    name: Deploy to GitHub Pages
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ui
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install and Build
+        run: |
+          npm install
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          npm run build
+          rm -rf node_modules
+          rm -rf src
+          rm -rf target
+
+      - name: Use the Upload Artifact GitHub Action
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload entire repository
+          path: ui/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
