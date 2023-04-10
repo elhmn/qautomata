@@ -1,0 +1,1 @@
+(self.webpackChunkrust_webpack_template=self.webpackChunkrust_webpack_template||[]).push([[235],{235:()=>{}}]);
