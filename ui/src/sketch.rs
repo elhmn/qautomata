@@ -191,9 +191,9 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let gray = Color::new(22. / 255., 27. / 255., 34. / 255., 1.);
     draw.background().color(gray);
 
-    let gdraw = draw.scale_y(1.0).x_y(
+    let gdraw = draw.x_y(
         m.block_size / 2. - m.win_w / 2.0,
-        m.block_size / 2. - m.win_h / 2.0,
+        (m.block_size / 2. - m.win_h / 2.0) * -1.0,
     );
 
     for i in 0..m.cols {
@@ -220,6 +220,11 @@ fn view(app: &App, model: &Model, frame: Frame) {
 fn draw_combined_state(i: i32, j: i32, universe: &Universe, gdraw: &Draw, m: &Model) {
     match universe.combined_state.get(&Coordinates { x: i, y: j }) {
         Some(probability) => {
+            //This required because of nannou's coordinate system
+            //where the origin is the center of the window
+            //and the y axis is inverted, so we need to have a negative
+            //y coodinate
+            let j = -j;
             //draw living cells
             let green = Color::new(0.0, 1., 0.0, *probability as f32);
             gdraw
@@ -239,6 +244,11 @@ fn draw_combined_state(i: i32, j: i32, universe: &Universe, gdraw: &Draw, m: &Mo
             }
         }
         None => {
+            //This required because of nannou's coordinate system
+            //where the origin is the center of the window
+            //and the y axis is inverted, so we need to have a negative
+            //y coodinate
+            let j = -j;
             gdraw
                 .rect()
                 .no_fill()
@@ -253,6 +263,11 @@ fn draw_combined_state(i: i32, j: i32, universe: &Universe, gdraw: &Draw, m: &Mo
 fn draw_configuration(i: i32, j: i32, configuration: &Configuration, gdraw: &Draw, m: &Model) {
     match configuration.living_cells.get(&Coordinates { x: i, y: j }) {
         Some(_) => {
+            //This required because of nannou's coordinate system
+            //where the origin is the center of the window
+            //and the y axis is inverted, so we need to have a negative
+            //y coodinate
+            let j = -j;
             //draw living cells
             let green = Color::new(0.0, 1., 0.0, 1.);
             gdraw
@@ -264,6 +279,11 @@ fn draw_configuration(i: i32, j: i32, configuration: &Configuration, gdraw: &Dra
                 .color(green);
         }
         None => {
+            //This required because of nannou's coordinate system
+            //where the origin is the center of the window
+            //and the y axis is inverted, so we need to have a negative
+            //y coodinate
+            let j = -j;
             gdraw
                 .rect()
                 .no_fill()
