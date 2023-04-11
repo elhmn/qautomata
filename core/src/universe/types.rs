@@ -84,6 +84,17 @@ impl Universe {
             rules,
         })
     }
+
+    pub fn new_from_str(content: &str) -> Result<Self, Error> {
+        let state: State = serde_json::from_str(content)?;
+        let rules = get_test_rules();
+        Ok(Self {
+            state,
+            combined_state: HashMap::new(),
+            is_even_step: true,
+            rules,
+        })
+    }
 }
 
 // get_test_rules return an array of rules
