@@ -11,7 +11,13 @@ lazy_static! {
 const WIDTH: u32 = 1024;
 const HEIGHT: u32 = 768;
 
+pub enum State {
+    Running,
+    Paused,
+}
+
 pub struct Model {
+    pub state: State,
     pub egui: Egui,
     pub win_w: f32,
     pub win_h: f32,
@@ -19,6 +25,7 @@ pub struct Model {
     pub block_stroke: f32,
     pub cols: i32,
     pub rows: i32,
+    pub universe_file: String,
     pub universe: Universe,
 }
 
@@ -37,11 +44,35 @@ fn raw_window_event(_app: &App, model: &mut Model, event: &nannou::winit::event:
 
 fn update_ui(model: &mut Model) {
     let ctx = model.egui.begin_frame();
+
     egui::Window::new("controls")
+        .resizable(true)
+        .default_height(300.0)
         .show(&ctx, |ui| {
-            if ui.add(egui::Button::new("Button")).clicked() {
-                println!("Button");
-            }
+            ui.horizontal(|ui| match model.state {
+                State::Running => {
+                    if ui.button("Pause").clicked() {
+                        model.state = State::Paused;
+                    }
+                }
+                State::Paused => {
+                    if ui.button("Reset").clicked() {
+                        model.universe =
+                            Universe::new_from_files(model.universe_file.as_str()).unwrap();
+                        model.universe.step();
+                    }
+                    if ui.button("Run").clicked() {
+                        model.state = State::Running;
+                    }
+                    if ui.add(egui::Button::new("Step")).clicked() {
+                        model.universe.step();
+                    }
+                    if ui.add(egui::Button::new("Measure")).clicked() {
+                        model.universe.measure();
+                        model.universe.step();
+                    }
+                }
+            });
         });
 }
 
@@ -73,6 +104,7 @@ fn model(app: &App) -> Model {
     let rows = (win_h / block_size).ceil() as i32;
 
     Model {
+        state: State::Running,
         egui,
         win_w,
         win_h,
@@ -80,22 +112,33 @@ fn model(app: &App) -> Model {
         block_stroke,
         cols,
         rows,
+        universe_file: state_file.to_string(),
         universe,
     }
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
-    let frame_to_skip = 10;
-    // Since we are unable to set the frame rate of the nannou app
-    // we use this trick to skip some frames in order to slow down
-    // the simulation. You can find out more in this comment: https://github.com/nannou-org/nannou/issues/708#issuecomment-1047032678
-    if app.elapsed_frames() % frame_to_skip != 0 {
-        return;
-    } else {
-        if model.universe.state.len() > 128 {
-            model.universe.measure();
+    match model.state {
+        State::Running => {
+            let frame_to_skip = 10;
+            // Since we are unable to set the frame rate of the nannou app
+            // we use this trick to skip some frames in order to slow down
+            // the simulation. You can find out more in this comment: https://github.com/nannou-org/nannou/issues/708#issuecomment-1047032678
+            if app.elapsed_frames() % frame_to_skip != 0 {
+                return;
+            } else {
+                if model.universe.state.len() > 128 {
+                    model.universe.measure();
+                }
+
+                model.universe.step();
+            }
         }
-        model.universe.step();
+        State::Paused => {
+            if model.universe.state.len() > 128 {
+                model.universe.measure();
+            }
+        }
     }
 
     update_ui(model);
