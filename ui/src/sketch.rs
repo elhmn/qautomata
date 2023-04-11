@@ -34,10 +34,6 @@ fn model(app: &App) -> Model {
         .unwrap();
 
     //Create a universe from a file
-    //Because the file path is relative to the root of the project, we can only run
-    //this program from the root of the project using:
-    //cargo run -p ui
-    //later we should allow the user to specify the path to the file as a command line argument
     let state_file = STATE_FILE.lock().unwrap();
     let universe: Universe = Universe::new_from_files(&state_file).unwrap();
 
