@@ -49,6 +49,7 @@ pub struct Universe {
     pub combined_state: HashMap<Coordinates, f64>,
     pub is_even_step: bool,
     pub rules: Rules,
+    pub step_count: usize,
 }
 
 impl Default for Universe {
@@ -66,33 +67,39 @@ impl Universe {
         };
         let state = vec![configuration];
         let rules = get_test_rules();
+        let step_count = 0;
         Self {
             state,
             combined_state: HashMap::new(),
             is_even_step: true,
             rules,
+            step_count,
         }
     }
 
     pub fn new_from_files(state_file: &str) -> Result<Self, Error> {
         let state = files::get_state_from_file(state_file)?;
         let rules = get_test_rules();
+        let step_count = 0;
         Ok(Self {
             state,
             combined_state: HashMap::new(),
             is_even_step: true,
             rules,
+            step_count,
         })
     }
 
     pub fn new_from_str(content: &str) -> Result<Self, Error> {
         let state: State = serde_json::from_str(content)?;
         let rules = get_test_rules();
+        let step_count = 0;
         Ok(Self {
             state,
             combined_state: HashMap::new(),
             is_even_step: true,
             rules,
+            step_count,
         })
     }
 }
