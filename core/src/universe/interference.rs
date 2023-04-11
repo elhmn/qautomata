@@ -51,8 +51,6 @@ impl Universe {
                     for coordinates in self.state[i].living_cells.keys() {
                         *self.combined_state.get_mut(coordinates).unwrap() += norm_delta;
                     }
-
-                    println!("Interference");
                 }
             }
         }
