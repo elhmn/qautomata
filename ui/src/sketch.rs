@@ -1,6 +1,7 @@
 use core::universe::types::{Coordinates, Universe};
 use lazy_static::lazy_static;
 use nannou::{draw::mesh::vertex::Color, prelude::*};
+use nannou_egui::{self, egui, Egui};
 use std::sync::Mutex;
 
 lazy_static! {
@@ -11,6 +12,7 @@ const WIDTH: u32 = 1024;
 const HEIGHT: u32 = 768;
 
 pub struct Model {
+    pub egui: Egui,
     pub win_w: f32,
     pub win_h: f32,
     pub block_size: f32,
@@ -25,13 +27,35 @@ pub fn run(state_file: String) {
     nannou::app(model).update(update).view(view).run();
 }
 
+fn ui_view(_app: &App, model: &Model, frame: Frame) {
+    model.egui.draw_to_frame(&frame).unwrap();
+}
+
+fn raw_window_event(_app: &App, model: &mut Model, event: &nannou::winit::event::WindowEvent) {
+    model.egui.handle_raw_event(event);
+}
+
+fn update_ui(model: &mut Model) {
+    let ctx = model.egui.begin_frame();
+    egui::Window::new("controls")
+        .show(&ctx, |ui| {
+            if ui.add(egui::Button::new("Button")).clicked() {
+                println!("Button");
+            }
+        });
+}
+
 fn model(app: &App) -> Model {
-    app.new_window()
+    let main_window = app
+        .new_window()
         .title("nannou web test")
         .size(WIDTH, HEIGHT)
         .view(view)
+        .raw_event(raw_window_event)
         .build()
         .unwrap();
+    let egui_window_ref = app.window(main_window).unwrap();
+    let egui = Egui::from_window(&egui_window_ref);
 
     //Create a universe from a file
     //Because the file path is relative to the root of the project, we can only run
@@ -49,6 +73,7 @@ fn model(app: &App) -> Model {
     let rows = (win_h / block_size).ceil() as i32;
 
     Model {
+        egui,
         win_w,
         win_h,
         block_size,
@@ -66,12 +91,14 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     // the simulation. You can find out more in this comment: https://github.com/nannou-org/nannou/issues/708#issuecomment-1047032678
     if app.elapsed_frames() % frame_to_skip != 0 {
         return;
+    } else {
+        if model.universe.state.len() > 128 {
+            model.universe.measure();
+        }
+        model.universe.step();
     }
 
-    if model.universe.state.len() > 128 {
-        model.universe.measure();
-    }
-    model.universe.step();
+    update_ui(model);
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
@@ -116,4 +143,5 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     // Write the result of our drawing to the window's frame.
     draw.to_frame(app, &frame).unwrap();
+    ui_view(app, model, frame);
 }
