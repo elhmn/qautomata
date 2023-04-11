@@ -25,7 +25,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ui
+        working-directory: web
 
     steps:
       - name: Checkout
@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: ui/dist
+          path: web/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
