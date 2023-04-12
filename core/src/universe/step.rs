@@ -5,6 +5,7 @@ use super::types::*;
 
 impl Universe {
     pub fn step(&mut self) {
+        self.step_count += 1;
         let old_state_len = self.state.len();
         let mut new_state: State = State::new();
         let mut new_combined_state: HashMap<Coordinates, f64> = HashMap::new();
