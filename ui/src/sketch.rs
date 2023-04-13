@@ -71,6 +71,7 @@ fn update_ui(model: &mut Model) {
 
                         if model.universe.state.len() > model.universe_measure_max {
                             model.universe.measure();
+                            model.selected_configuration = None;
                         }
                     }
                     if ui.button("Measure").clicked() {
@@ -173,6 +174,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
 
                 if model.universe.state.len() > model.universe_measure_max {
                     model.universe.measure();
+                    model.selected_configuration = None;
                 }
             }
         }
