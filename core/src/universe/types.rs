@@ -81,26 +81,30 @@ impl Universe {
         let state = files::get_state_from_file(state_file)?;
         let rules = get_test_rules();
         let step_count = 0;
-        Ok(Self {
+        let mut universe = Self {
             state,
             combined_state: HashMap::new(),
             is_even_step: true,
             rules,
             step_count,
-        })
+        };
+        universe.compute_combined_state();
+        Ok(universe)
     }
 
     pub fn new_from_str(content: &str) -> Result<Self, Error> {
         let state: State = serde_json::from_str(content)?;
         let rules = get_test_rules();
         let step_count = 0;
-        Ok(Self {
+        let mut universe = Self {
             state,
             combined_state: HashMap::new(),
             is_even_step: true,
             rules,
             step_count,
-        })
+        };
+        universe.compute_combined_state();
+        Ok(universe)
     }
 }
 
