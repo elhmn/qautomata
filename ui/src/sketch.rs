@@ -68,6 +68,10 @@ fn update_ui(model: &mut Model) {
                     }
                     if ui.button("Step").clicked() {
                         model.universe.step();
+
+                        if model.universe.state.len() > model.universe_measure_max {
+                            model.universe.measure();
+                        }
                     }
                     if ui.button("Measure").clicked() {
                         model.universe.measure();
@@ -172,11 +176,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
                 }
             }
         }
-        State::Paused => {
-            if model.universe.state.len() > model.universe_measure_max {
-                model.universe.measure();
-            }
-        }
+        State::Paused => (),
     }
 
     update_ui(model);
