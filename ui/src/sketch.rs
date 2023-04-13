@@ -165,11 +165,11 @@ fn update(app: &App, model: &mut Model, _update: Update) {
             if app.elapsed_frames() % frame_to_skip != 0 {
                 return;
             } else {
+                model.universe.step();
+
                 if model.universe.state.len() > model.universe_measure_max {
                     model.universe.measure();
                 }
-
-                model.universe.step();
             }
         }
         State::Paused => {
