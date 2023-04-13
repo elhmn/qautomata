@@ -62,7 +62,6 @@ fn update_ui(model: &mut Model) {
                         model.selected_configuration = None;
                         model.universe =
                             Universe::new_from_files(model.universe_file.as_str()).unwrap();
-                        model.universe.step();
                     }
                     if ui.button("Run").clicked() {
                         model.state = State::Running;
