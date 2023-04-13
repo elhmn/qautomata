@@ -62,13 +62,17 @@ fn update_ui(model: &mut Model) {
                         model.selected_configuration = None;
                         model.universe =
                             Universe::new_from_files(model.universe_file.as_str()).unwrap();
-                        model.universe.step();
                     }
                     if ui.button("Run").clicked() {
                         model.state = State::Running;
                     }
                     if ui.button("Step").clicked() {
                         model.universe.step();
+
+                        if model.universe.state.len() > model.universe_measure_max {
+                            model.universe.measure();
+                            model.selected_configuration = None;
+                        }
                     }
                     if ui.button("Measure").clicked() {
                         model.universe.measure();
@@ -166,18 +170,15 @@ fn update(app: &App, model: &mut Model, _update: Update) {
             if app.elapsed_frames() % frame_to_skip != 0 {
                 return;
             } else {
+                model.universe.step();
+
                 if model.universe.state.len() > model.universe_measure_max {
                     model.universe.measure();
+                    model.selected_configuration = None;
                 }
-
-                model.universe.step();
             }
         }
-        State::Paused => {
-            if model.universe.state.len() > model.universe_measure_max {
-                model.universe.measure();
-            }
-        }
+        State::Paused => (),
     }
 
     update_ui(model);
