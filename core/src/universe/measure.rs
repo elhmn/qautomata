@@ -28,6 +28,7 @@ impl Universe {
         let mut chosen_configuration = self.state.swap_remove(chosen_configuration_index);
         chosen_configuration.amplitude = Complex::new(1.0, 0.0);
         self.state = vec![chosen_configuration];
+        self.compute_combined_state();
     }
 }
 
