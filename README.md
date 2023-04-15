@@ -46,7 +46,7 @@ An instance of the qautomata, it contains:
 A list of [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration).
 
 ### Configuration
-A grid of [cells](#cell) that can either be dead or alive, asssociated with an [amplitude](#amplitude).
+A grid of [cells](#cell), associated with an [amplitude](#amplitude).
 
 ### Cell
 An element of the grid of the [configuration](#configuration) that can either be dead or alive.
