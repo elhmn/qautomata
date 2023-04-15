@@ -52,7 +52,7 @@ A grid of [cells](#cell), associated with an [amplitude](#amplitude).
 An element of the grid of the [configuration](#configuration) that can either be dead or alive.
 
 ### Amplitude
-A complex number asociated with a [configuration](#configuration), it can be used to compute the [probability](#probability) associated with it.
+A complex number associated with a [configuration](#configuration), it can be used to compute the [probability](#probability) associated with the [configuration](#configuration).
 
 ### Probability
 [Probability](#probability) of a configuration to be selected in case of a [measure](#measure). It's the [squared norm](https://en.wikipedia.org/wiki/Norm_(mathematics)) of the [amplitude](#amplitude).
