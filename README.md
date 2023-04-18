@@ -6,9 +6,13 @@ Given a starting [universe](#universe) with a single [configuration](#configurat
 
 ## How does it work
 
+### Automata algorithm
+
+#### Start
 We start with a [universe](#universe) [state](#state) containing one [configuration](#configuration) with some living [cells](#cell) and a set of [rules](#rules) represented by an [operator matrix](#operator-matrix).
 
-During each [step](#step), we apply the [rules](#rules) locally on 2\*2 squares that alternate at each [step](#step):  
+#### Step computation
+During each [step](#step) and for each [configuration](#configuration) in the [universe state](#universe-state), we apply the [rules](#rules) locally on 2\*2 squares that alternate at each [step](#step):  
 - On even [steps](#step), the [rules](#rules) apply on each 2\*2 square outlined in black:
 
 ![6-6-square-even](https://user-images.githubusercontent.com/11985913/232360559-3c87237f-855a-4c30-b6da-a0201eb273a2.png)
@@ -19,8 +23,44 @@ During each [step](#step), we apply the [rules](#rules) locally on 2\*2 squares 
 
 This alternation allows the propagation of living [cells](#cell) in the entire [universe](#universe).
 
-For each local 2\*2 square with at least one living [cell](#cell), considered as a vector with 4 values, we obtain the resulting 2\*2 square by computing the product of the vector and the [operator matrix](#operator-matrix).  
+We compute the next state of each local 2\*2 square with at least one living [cell](#cell) using the [operator matrix](#operator-matrix).  
+We obtain a list (with at least one element) of 2\*2 square state, with each element associated with a complex number.  
+This list is obtained by computing the product of the vector that reprensents the state of a local 2\*2 square and the [operator matrix]((#operator-matrix).  
+- If there is only one element in the list, we update the [configuration](#configuration) with the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state.
+- If there are several elements in the list, we split the [configuration](#configuration) into [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration), one for each element in the list. We then update each new [configuration](#configuration) with with one element of the list: we update the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state.
 
+We then check for [interference](#interference) and the [step(#step)] is over.
+
+During the [step](#step) we also compute the [combined state](#combined-state) of the [universe](#universe) that we will be used to visualize the [universe](#universe) in the UI.
+
+### UI
+
+#### Demo
+
+#### Pause button
+Button that pauses the qautomata and give access to all other buttons.
+
+#### Reset button
+Button that resets the qautomata to the starting state file.
+
+#### Run button
+Button that runs the qautomata (unpausing), steps will then be computed automatically.
+
+#### Step button
+Button that computes the next [step](#step) of the qautomata.
+
+#### Measure button
+Button that applies a [measure](#measure) to the qautomata.  
+An automatic [measure](#measure) is applied if there is more than 128 [configurations](#configuration) in the [universe state](#universe-state) after a [step](#step), we do this to limit the time complexity of the algorithm.
+
+#### Show numbers button
+Button to enable/disable the display of the probabilities on the [combined state](#combined-state).
+
+#### Combined state button
+Button to display the [combined state](#combined-state).
+
+#### Configurations buttons
+Button to display a given [configuration](#configuration).
 
 ## Developpement
 
@@ -56,7 +96,7 @@ An instance of the qautomata, it contains:
 - A [state](#universe-state)
 - A set of [rules](#rules)
 - The parity of the current [step](#step)
-- The [generation](#generation) count (number of generation elapsed since the beginning).
+- The number of [step](#step) elapsed since the beginning
 
 ### Universe state
 A list of [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration).
@@ -68,27 +108,25 @@ A grid of [cells](#cell), associated with an [amplitude](#amplitude).
 An element of the grid of the [configuration](#configuration) that can either be dead or alive.
 
 ### Amplitude
-A complex number associated with a [configuration](#configuration), it can be used to compute the [probability](#probability) associated with the [configuration](#configuration).
+A complex number associated with a [configuration](#configuration), it can be used to compute the [probability](#configuration-probability) associated with the [configuration](#configuration).
 
-### Probability
-[Probability](#probability) of a configuration to be selected in case of a [measure](#measure). It's the [squared norm](https://en.wikipedia.org/wiki/Norm_(mathematics)) of the [amplitude](#amplitude).
+### Configuration probability
+Probability of a [configuration](#configuration) to be selected in case of a [measure](#measure). It's the [squared norm](https://en.wikipedia.org/wiki/Norm_(mathematics)) of the [amplitude](#amplitude).
 
 ### Measure
-Randomly select a [configuration](#configuration) from the [universe state](#universe-state), set its amplitude to 1 and remove all other [configurations](#configuration). The random selection is made with a [density probability](#probability) computed with the [amplitudes](#amplitude) of the [configurations](#configuration).
+Randomly select a [configuration](#configuration) from the [universe state](#universe-state), set its amplitude to 1 and remove all other [configurations](#configuration). The random selection is made with a [density probability](#configuration-probability) computed with the [amplitudes](#amplitude) of the [configurations](#configuration).
 
 ### Rules
 A set of rule for the universe, see [Operator matrix](#operator-matrix).
 
 ### Operator matrix
-A 16\*16 [unitary matrix](https://en.wikipedia.org/wiki/Unitary_matrix) used to compute the [steps](#step) of the [universe](#universe).  
-The [rules](#rules) apply on local 2\*2 squares of a [configuration](#configuration), considered as a vector with 4 values.  
-For any of the 16 possible 2\*2 square vector values, we obtain the resulting 2\*2 square by computing the product of the vector and the operator matrix.
+A 16\*16 [unitary matrix](https://en.wikipedia.org/wiki/Unitary_matrix) used to compute the [steps](#step) of the [universe](#universe).   
 
 ### Step
-Computation of a new [Generation](#generation).
-
-### Generation
 An instant of the [universe](#universe).
 
 ### Interference
 When several [configurations](#configuration) have exactly the same alive [cells](#cell), they interfer and merge into one [configuration](#configuration) with their [amplitudes](#amplitude) added.
+
+### Combined state
+It containes all [cells](#cell) that are alive in at least one [configuration](#configuration) of the [universe state](#universe-state), each [cell](#cell) associated with a probability that is eaqual to the sum of the [configuration probabilitiy](#configuration-probability) of all the [configurations](#configuration) in witch the [cell](#cell) is alive.
