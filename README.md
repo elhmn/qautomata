@@ -2,14 +2,12 @@
 Qautomata is a two dimensional quantum [cellular automata](https://en.wikipedia.org/wiki/Cellular_automaton).  
 Given a starting [universe](#universe) with a single [configuration](#configuration) containing some living [cells](#cell) and a set of [rules](#rules), it computes the evolution of the [universe](#universe).
 
-## Screenshot
-
 ## How does it work
 
 ### Automata algorithm
 
 #### Start
-We start with a [universe](#universe) [state](#state) containing one [configuration](#configuration) with some living [cells](#cell) and a set of [rules](#rules) represented by an [operator matrix](#operator-matrix).
+We start with a [universe](#universe) [state](#universe-state) containing one [configuration](#configuration) with some living [cells](#cell) and a set of [rules](#rules) represented by an [operator matrix](#operator-matrix).
 
 #### Step computation
 During each [step](#step) and for each [configuration](#configuration) in the [universe state](#universe-state), we apply the [rules](#rules) locally on 2\*2 squares that alternate at each [step](#step):  
@@ -24,12 +22,12 @@ During each [step](#step) and for each [configuration](#configuration) in the [u
 This alternation allows the propagation of living [cells](#cell) in the entire [universe](#universe).
 
 We compute the next state of each local 2\*2 square with at least one living [cell](#cell) using the [operator matrix](#operator-matrix).  
-We obtain a list (with at least one element) of 2\*2 square state, with each element associated with a complex number.  
-This list is obtained by computing the product of the vector that reprensents the state of a local 2\*2 square and the [operator matrix]((#operator-matrix).  
+We obtain a list (with at least one element) of 2\*2 square state with each element associated with a complex number.  
+This list is obtained by computing the product of the vector that represents the state of a local 2\*2 square and the [operator matrix](#operator-matrix).  
 - If there is only one element in the list, we update the [configuration](#configuration) with the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state. (see [visual example](#visual-example) step 5-8)
-- If there are several elements in the list, we split the [configuration](#configuration) into [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration), one for each element in the list. We then update each new [configuration](#configuration) with with one element of the list: we update the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state. (see [visual example](#visual-example) step 0-1)
+- If there are several elements in the list, we split the [configuration](#configuration) into [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration), one for each element in the list. We then update each new [configuration](#configuration) with with one element of the list: we update the [configuration](#configuration) with the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state. (see [visual example](#visual-example) step 0-1)
 
-We then check for [interference](#interference) and the [step(#step)] is over. (see [visual example](#visual-example) step 4-5)
+We then check for [interference](#interference) and the [step](#step) is over. (see [visual example](#visual-example) step 4-5)
 
 During the [step](#step) we also compute the [combined state](#combined-state) of the [universe](#universe) that we will be used to visualize the [universe](#universe) in the UI.
 
@@ -52,7 +50,7 @@ Button that computes the next [step](#step) of the qautomata.
 
 #### Measure button
 Button that applies a [measure](#measure) to the qautomata.  
-An automatic [measure](#measure) is applied if there is more than 128 [configurations](#configuration) in the [universe state](#universe-state) after a [step](#step), we do this to limit the time complexity of the algorithm.
+An automatic [measure](#measure) is applied if there are more than 128 [configurations](#configuration) in the [universe state](#universe-state) after a [step](#step), we do this to limit the time complexity of the algorithm.
 
 #### Show numbers button
 Button to enable/disable the display of the probabilities on the [combined state](#combined-state).
@@ -101,6 +99,7 @@ An instance of the qautomata, it contains:
 - A set of [rules](#rules)
 - The parity of the current [step](#step)
 - The number of [step](#step) elapsed since the beginning
+- The [combined state](#combined-state)
 
 ### Universe state
 A list of [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration).
