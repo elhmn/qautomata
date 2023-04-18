@@ -26,16 +26,17 @@ This alternation allows the propagation of living [cells](#cell) in the entire [
 We compute the next state of each local 2\*2 square with at least one living [cell](#cell) using the [operator matrix](#operator-matrix).  
 We obtain a list (with at least one element) of 2\*2 square state, with each element associated with a complex number.  
 This list is obtained by computing the product of the vector that reprensents the state of a local 2\*2 square and the [operator matrix]((#operator-matrix).  
-- If there is only one element in the list, we update the [configuration](#configuration) with the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state.
-- If there are several elements in the list, we split the [configuration](#configuration) into [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration), one for each element in the list. We then update each new [configuration](#configuration) with with one element of the list: we update the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state.
+- If there is only one element in the list, we update the [configuration](#configuration) with the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state. (see [visual example](#visual-example) step 5-8)
+- If there are several elements in the list, we split the [configuration](#configuration) into [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration), one for each element in the list. We then update each new [configuration](#configuration) with with one element of the list: we update the new 2\*2 square state and multiply its [amplitude](#amplitude) by the complex number associated with the new 2\*2 square state. (see [visual example](#visual-example) step 0-1)
 
-We then check for [interference](#interference) and the [step(#step)] is over.
+We then check for [interference](#interference) and the [step(#step)] is over. (see [visual example](#visual-example) step 4-5)
 
 During the [step](#step) we also compute the [combined state](#combined-state) of the [universe](#universe) that we will be used to visualize the [universe](#universe) in the UI.
 
-### UI
+#### Visual example
+https://user-images.githubusercontent.com/11985913/232820455-15974aac-31ce-46e3-9fa2-cfe942b8c3cb.mp4
 
-#### Demo
+### UI
 
 #### Pause button
 Button that pauses the qautomata and give access to all other buttons.
@@ -61,6 +62,9 @@ Button to display the [combined state](#combined-state).
 
 #### Configurations buttons
 Button to display a given [configuration](#configuration).
+
+#### Demo
+https://user-images.githubusercontent.com/11985913/232825192-bae9645e-2e0c-4054-8783-51ea2fd232ce.mp4
 
 ## Developpement
 
