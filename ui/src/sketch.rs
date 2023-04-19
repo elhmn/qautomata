@@ -106,7 +106,11 @@ fn update_ui(model: &mut Model) {
             ui.add_space(4.0);
             ui.checkbox(&mut model.show_numbers, "Show numbers");
             let row_height = 10.;
-            let num_rows = model.universe.state.len();
+            let num_rows = if model.universe.state.len() <= 1024 {
+                model.universe.state.len()
+            } else {
+                1024
+            };
             egui::ScrollArea::vertical()
                 .auto_shrink([false; 2])
                 .show_rows(ui, row_height, num_rows, |ui, row_range| {
@@ -123,13 +127,9 @@ fn update_ui(model: &mut Model) {
                                 ),
                             );
                         });
-                        if row >= model.universe_measure_max {
-                            ui.label(format!(
-                                "can't show more than {} items",
-                                model.universe_measure_max
-                            ));
-                            break;
-                        }
+                    }
+                    if model.universe.state.len() > 1024 {
+                        ui.label("can't show more than 1024 items");
                     }
                 });
         });
