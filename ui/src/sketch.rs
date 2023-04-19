@@ -1,6 +1,6 @@
 use core::universe::types::{Configuration, Coordinates, Universe};
 use lazy_static::lazy_static;
-use nannou::{draw::mesh::vertex::Color, prelude::*};
+use nannou::{draw::mesh::vertex::Color, glam::Vec2, prelude::*, state::mouse::ButtonPosition};
 use nannou_egui::{self, egui, Egui};
 use std::sync::Mutex;
 
@@ -12,12 +12,21 @@ const WIDTH: u32 = 1024;
 const HEIGHT: u32 = 768;
 
 pub enum State {
+    Drawing,
     Running,
     Paused,
 }
 
+pub enum DrawState {
+    Creating,
+    Deleting,
+    NoDraw,
+    NoClick,
+}
+
 pub struct Model {
     pub state: State,
+    pub draw_state: DrawState,
     pub egui: Egui,
     pub win_w: f32,
     pub win_h: f32,
@@ -27,15 +36,18 @@ pub struct Model {
     pub rows: i32,
     pub auto_measure: bool,
     pub show_numbers: bool,
-    pub universe_file: String,
+    pub universe_file: Option<String>,
     pub universe_measure_max: usize,
     pub universe: Universe,
     pub selected_configuration: Option<usize>,
     pub configurations_max: usize,
 }
 
-pub fn run(state_file: String) {
-    *STATE_FILE.lock().unwrap() = state_file;
+pub fn run(state_file: Option<String>) {
+    *STATE_FILE.lock().unwrap() = match state_file {
+        Some(sf) => sf,
+        None => "".to_string(),
+    };
     nannou::app(model).update(update).view(view).run();
 }
 
@@ -54,6 +66,11 @@ fn update_ui(model: &mut Model) {
         .resizable(false)
         .show(&ctx, |ui| {
             ui.horizontal(|ui| match model.state {
+                State::Drawing => {
+                    if ui.button("Start").clicked() {
+                        model.state = State::Paused;
+                    }
+                }
                 State::Running => {
                     if ui.button("Pause").clicked() {
                         model.state = State::Paused;
@@ -62,8 +79,15 @@ fn update_ui(model: &mut Model) {
                 State::Paused => {
                     if ui.button("Reset").clicked() {
                         model.selected_configuration = None;
-                        model.universe =
-                            Universe::new_from_files(model.universe_file.as_str()).unwrap();
+                        model.universe = match &model.universe_file {
+                            Some(universe_file) => {
+                                Universe::new_from_files(universe_file.as_str()).unwrap()
+                            }
+                            None => {
+                                model.state = State::Drawing;
+                                Universe::new()
+                            }
+                        }
                     }
                     if ui.button("Run").clicked() {
                         model.state = State::Running;
@@ -151,9 +175,17 @@ fn model(app: &App) -> Model {
     let egui_window_ref = app.window(main_window).unwrap();
     let egui = Egui::from_window(&egui_window_ref);
 
-    //Create a universe from a file
+    // If a state file is provided, we use it to create the universe
+    // Else we create an empty universe in which we can draw cells
     let state_file = STATE_FILE.lock().unwrap();
-    let universe: Universe = Universe::new_from_files(&state_file).unwrap();
+    let (universe, universe_file, state) = match state_file.as_str() {
+        "" => (Universe::new(), None, State::Drawing),
+        sf => (
+            Universe::new_from_files(sf).unwrap(),
+            Some(sf.to_string()),
+            State::Running,
+        ),
+    };
 
     let win_w = app.window_rect().w();
     let win_h = app.window_rect().h();
@@ -163,7 +195,8 @@ fn model(app: &App) -> Model {
     let rows = (win_h / block_size).ceil() as i32;
 
     Model {
-        state: State::Running,
+        state,
+        draw_state: DrawState::NoClick,
         egui,
         win_w,
         win_h,
@@ -173,7 +206,7 @@ fn model(app: &App) -> Model {
         rows,
         auto_measure: true,
         show_numbers: false,
-        universe_file: state_file.to_string(),
+        universe_file,
         universe_measure_max: 128,
         selected_configuration: None,
         universe,
@@ -183,6 +216,50 @@ fn model(app: &App) -> Model {
 
 fn update(app: &App, model: &mut Model, _update: Update) {
     match model.state {
+        State::Drawing => match app.mouse.buttons.left() {
+            ButtonPosition::Up => {
+                if !matches!(model.draw_state, DrawState::NoClick) {
+                    model.draw_state = DrawState::NoClick;
+                }
+            }
+            ButtonPosition::Down(click_pos) => {
+                if matches!(model.draw_state, DrawState::NoClick) {
+                    model.draw_state = match get_cell_coordinates(click_pos, model) {
+                        Some(cell_coordinates) => {
+                            match model.universe.state[0].living_cells.get(&cell_coordinates) {
+                                Some(_) => DrawState::Deleting,
+                                None => DrawState::Creating,
+                            }
+                        }
+                        None => DrawState::NoDraw,
+                    };
+                }
+
+                if matches!(model.draw_state, DrawState::Creating | DrawState::Deleting) {
+                    let mouse_pos = app.mouse.position();
+
+                    if let Some(cell_coordinates) = get_cell_coordinates(&mouse_pos, model) {
+                        match model.universe.state[0].living_cells.get(&cell_coordinates) {
+                            Some(_) => {
+                                if matches!(model.draw_state, DrawState::Deleting) {
+                                    model.universe.state[0]
+                                        .living_cells
+                                        .remove(&cell_coordinates);
+                                }
+                            }
+                            None => {
+                                if matches!(model.draw_state, DrawState::Creating) {
+                                    model.universe.state[0]
+                                        .living_cells
+                                        .insert(cell_coordinates, false);
+                                }
+                            }
+                        };
+                        model.universe.compute_combined_state();
+                    };
+                }
+            }
+        },
         State::Running => {
             let frame_to_skip = 10;
             // Since we are unable to set the frame rate of the nannou app
@@ -314,5 +391,16 @@ fn draw_configuration(i: i32, j: i32, configuration: &Configuration, gdraw: &Dra
                 .x_y(i as f32 * (m.block_size), j as f32 * (m.block_size))
                 .w_h(m.block_size, m.block_size);
         }
+    }
+}
+
+fn get_cell_coordinates(pos: &Vec2, m: &Model) -> Option<Coordinates> {
+    let x = ((pos.x + (m.win_w / 2.)) / m.block_size) as i32;
+    let y = (((pos.y * -1.) + (m.win_h / 2.)) / m.block_size) as i32;
+
+    if x >= 0 && x < m.cols && y >= 0 && y < m.rows {
+        Some(Coordinates { x, y })
+    } else {
+        None
     }
 }
