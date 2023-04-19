@@ -189,7 +189,7 @@ fn model(app: &App) -> Model {
 
     let win_w = app.window_rect().w();
     let win_h = app.window_rect().h();
-    let block_size = 30.;
+    let block_size = 32.;
     let block_stroke = 0.2;
     let cols = (win_w / block_size).ceil() as i32;
     let rows = (win_h / block_size).ceil() as i32;
