@@ -1,16 +1,16 @@
 # Qautomata
 Qautomata is a two dimensional quantum [cellular automata](https://en.wikipedia.org/wiki/Cellular_automaton).  
-Given a starting [universe](#universe) with a single [configuration](#configuration) containing some living [cells](#cell) and a set of [rules](#rules), it computes the evolution of the [universe](#universe).
+Given a starting [configuration](#configuration) containing some living [cells](#cell) and a set of [rules](#rules), it computes the evolution of the [universe](#universe).
 
 ## How does it work
 
 ### Automata algorithm
 
 #### Start
-We start with a [universe](#universe) [state](#universe-state) containing one [configuration](#configuration) with some living [cells](#cell) and a set of [rules](#rules) represented by an [operator matrix](#operator-matrix).
+We start with a [universe](#universe) containing one [configuration](#configuration) with some living [cells](#cell) and a set of [rules](#rules) represented by an [operator matrix](#operator-matrix).
 
 #### Step computation
-During each [step](#step) and for each [configuration](#configuration) in the [universe state](#universe-state), we apply the [rules](#rules) locally on 2\*2 squares that alternate at each [step](#step):  
+During each [step](#step) and for each [configuration](#configuration) in the [global state](#global-state), we apply the [rules](#rules) locally on 2\*2 squares that alternate at each [step](#step):  
 - On even [steps](#step), the [rules](#rules) apply on each 2\*2 square outlined in black:
 
 ![6-6-square-even](https://user-images.githubusercontent.com/11985913/232360559-3c87237f-855a-4c30-b6da-a0201eb273a2.png)
@@ -50,7 +50,7 @@ Button that computes the next [step](#step) of the qautomata.
 
 #### Measure button
 Button that applies a [measure](#measure) to the qautomata.  
-An automatic [measure](#measure) is applied if there are more than 128 [configurations](#configuration) in the [universe state](#universe-state) after a [step](#step), we do this to limit the time complexity of the algorithm.
+An automatic [measure](#measure) is applied if there are more than 128 [configurations](#configuration) in the [global state](#global-state) after a [step](#step), we do this to limit the time complexity of the algorithm.
 
 #### Show numbers button
 Button to enable/disable the display of the probabilities on the [combined state](#combined-state).
@@ -95,17 +95,17 @@ To test the web application as a binary:
 
 ### Universe
 An instance of the qautomata, it contains:
-- A [state](#universe-state)
+- A [global state](#global-state)
 - A set of [rules](#rules)
 - The parity of the current [step](#step)
 - The number of [step](#step) elapsed since the beginning
 - The [combined state](#combined-state)
 
-### Universe state
-A list of [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration).
+### Global state
+A list of [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration) each associated with an [amplitude](#amplitude).
 
 ### Configuration
-A grid of [cells](#cell), associated with an [amplitude](#amplitude).
+A grid of [cells](#cell).
 
 ### Cell
 An element of the grid of the [configuration](#configuration) that can either be dead or alive.
@@ -117,7 +117,7 @@ A complex number associated with a [configuration](#configuration), it can be us
 Probability of a [configuration](#configuration) to be selected in case of a [measure](#measure). It's the [squared norm](https://en.wikipedia.org/wiki/Norm_(mathematics)) of the [amplitude](#amplitude).
 
 ### Measure
-Randomly select a [configuration](#configuration) from the [universe state](#universe-state), set its amplitude to 1 and remove all other [configurations](#configuration). The random selection is made with a [density probability](#configuration-probability) computed with the [amplitudes](#amplitude) of the [configurations](#configuration).
+Randomly select a [configuration](#configuration) from the [global state](#global-state), set its amplitude to 1 and remove all other [configurations](#configuration). The random selection is made with a [density probability](#configuration-probability) computed with the [amplitudes](#amplitude) of the [configurations](#configuration).
 
 ### Rules
 A set of rule for the universe, see [Operator matrix](#operator-matrix).
@@ -132,4 +132,4 @@ An instant of the [universe](#universe).
 When several [configurations](#configuration) have exactly the same alive [cells](#cell), they interfer and merge into one [configuration](#configuration) with their [amplitudes](#amplitude) added.
 
 ### Combined state
-It containes all [cells](#cell) that are alive in at least one [configuration](#configuration) of the [universe state](#universe-state), each [cell](#cell) associated with a probability that is eaqual to the sum of the [configuration probabilitiy](#configuration-probability) of all the [configurations](#configuration) in witch the [cell](#cell) is alive.
+It containes all [cells](#cell) that are alive in at least one [configuration](#configuration) of the [global state](#global-state), each [cell](#cell) associated with a probability that is eaqual to the sum of the [configuration probabilitiy](#configuration-probability) of all the [configurations](#configuration) in witch the [cell](#cell) is alive.
