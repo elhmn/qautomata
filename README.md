@@ -129,7 +129,7 @@ A 16\*16 [unitary matrix](https://en.wikipedia.org/wiki/Unitary_matrix) used to 
 An instant of the [universe](#universe).
 
 ### Interference
-When several [configurations](#configuration) have exactly the same alive [cells](#cell), they interfer and merge into one [configuration](#configuration) with their [amplitudes](#amplitude) added.
+When several [configurations](#configuration) have exactly the same alive [cells](#cell), they interfere and merge into one [configuration](#configuration) with their [amplitudes](#amplitude) added.
 
 ### Combined state
 It containes all [cells](#cell) that are alive in at least one [configuration](#configuration) of the [global state](#global-state), each [cell](#cell) associated with a probability that is eaqual to the sum of the [configuration probabilitiy](#configuration-probability) of all the [configurations](#configuration) in witch the [cell](#cell) is alive.
