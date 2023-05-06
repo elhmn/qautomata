@@ -71,7 +71,7 @@ https://user-images.githubusercontent.com/11985913/232825192-bae9645e-2e0c-4054-
 
 ### Architecture
 The project is divided into 3 parts:
-- core: contains the datas and computing part of the qautomata
+- core: contains the data and computing part of the qautomata
 - ui: desktop ui implemented with [nannou](https://nannou.cc/), used to visualize and interact with the qautomata
 - web: launch the ui into the web (not fully functional yet)
 
