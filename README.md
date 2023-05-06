@@ -132,4 +132,4 @@ An instant of the [universe](#universe).
 When several [configurations](#configuration) have exactly the same alive [cells](#cell), they interfere and merge into one [configuration](#configuration) with their [amplitudes](#amplitude) added.
 
 ### Combined state
-It containes all [cells](#cell) that are alive in at least one [configuration](#configuration) of the [global state](#global-state), each [cell](#cell) associated with a probability that is eaqual to the sum of the [configuration probabilitiy](#configuration-probability) of all the [configurations](#configuration) in witch the [cell](#cell) is alive.
+It contains all [cells](#cell) that are alive in at least one [configuration](#configuration) of the [global state](#global-state), each [cell](#cell) associated with a probability that is equal to the sum of the [configuration probabilitiy](#configuration-probability) of all the [configurations](#configuration) in which the [cell](#cell) is alive.
