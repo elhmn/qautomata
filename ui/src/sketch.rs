@@ -31,6 +31,7 @@ pub struct Model {
     pub universe_measure_max: usize,
     pub universe: Universe,
     pub selected_configuration: Option<usize>,
+    pub configurations_max: usize,
 }
 
 pub fn run(state_file: String) {
@@ -106,10 +107,10 @@ fn update_ui(model: &mut Model) {
             ui.add_space(4.0);
             ui.checkbox(&mut model.show_numbers, "Show numbers");
             let row_height = 10.;
-            let num_rows = if model.universe.state.len() <= 1024 {
+            let num_rows = if model.universe.state.len() <= model.configurations_max {
                 model.universe.state.len()
             } else {
-                1024
+                model.configurations_max
             };
             egui::ScrollArea::vertical()
                 .auto_shrink([false; 2])
@@ -128,8 +129,11 @@ fn update_ui(model: &mut Model) {
                             );
                         });
                     }
-                    if model.universe.state.len() > 1024 {
-                        ui.label("can't show more than 1024 items");
+                    if model.universe.state.len() > model.configurations_max {
+                        ui.label(format!(
+                            "can't show more than {} configurations",
+                            model.configurations_max
+                        ));
                     }
                 });
         });
@@ -173,6 +177,7 @@ fn model(app: &App) -> Model {
         universe_measure_max: 128,
         selected_configuration: None,
         universe,
+        configurations_max: 1024,
     }
 }
 
