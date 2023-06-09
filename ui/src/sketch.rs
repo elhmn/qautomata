@@ -25,11 +25,13 @@ pub struct Model {
     pub block_stroke: f32,
     pub cols: i32,
     pub rows: i32,
+    pub auto_measure: bool,
     pub show_numbers: bool,
     pub universe_file: String,
     pub universe_measure_max: usize,
     pub universe: Universe,
     pub selected_configuration: Option<usize>,
+    pub configurations_max: usize,
 }
 
 pub fn run(state_file: String) {
@@ -69,7 +71,9 @@ fn update_ui(model: &mut Model) {
                     if ui.button("Step").clicked() {
                         model.universe.step();
 
-                        if model.universe.state.len() > model.universe_measure_max {
+                        if model.auto_measure
+                            && model.universe.state.len() > model.universe_measure_max
+                        {
                             model.universe.measure();
                             model.selected_configuration = None;
                         }
@@ -81,6 +85,18 @@ fn update_ui(model: &mut Model) {
                 }
             });
             ui.separator();
+            ui.checkbox(&mut model.auto_measure, "Auto measure");
+            if model.auto_measure {
+                ui.horizontal(|ui| {
+                    ui.add(
+                        egui::DragValue::new(&mut model.universe_measure_max)
+                            .clamp_range(2..=65536)
+                            .speed(0.1),
+                    );
+                    ui.label("Max superposed configurations before measure");
+                });
+            }
+            ui.separator();
             ui.label(format!("Step: {}", model.universe.step_count));
             ui.label(format!("Is even step: {}", model.universe.is_even_step));
             ui.separator();
@@ -91,7 +107,11 @@ fn update_ui(model: &mut Model) {
             ui.add_space(4.0);
             ui.checkbox(&mut model.show_numbers, "Show numbers");
             let row_height = 10.;
-            let num_rows = model.universe.state.len();
+            let num_rows = if model.universe.state.len() <= model.configurations_max {
+                model.universe.state.len()
+            } else {
+                model.configurations_max
+            };
             egui::ScrollArea::vertical()
                 .auto_shrink([false; 2])
                 .show_rows(ui, row_height, num_rows, |ui, row_range| {
@@ -108,13 +128,12 @@ fn update_ui(model: &mut Model) {
                                 ),
                             );
                         });
-                        if row >= model.universe_measure_max {
-                            ui.label(format!(
-                                "can't show more than {} items",
-                                model.universe_measure_max
-                            ));
-                            break;
-                        }
+                    }
+                    if model.universe.state.len() > model.configurations_max {
+                        ui.label(format!(
+                            "can't show more than {} configurations",
+                            model.configurations_max
+                        ));
                     }
                 });
         });
@@ -152,11 +171,13 @@ fn model(app: &App) -> Model {
         block_stroke,
         cols,
         rows,
+        auto_measure: true,
         show_numbers: false,
         universe_file: state_file.to_string(),
         universe_measure_max: 128,
         selected_configuration: None,
         universe,
+        configurations_max: 1024,
     }
 }
 
@@ -172,7 +193,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
             } else {
                 model.universe.step();
 
-                if model.universe.state.len() > model.universe_measure_max {
+                if model.auto_measure && model.universe.state.len() > model.universe_measure_max {
                     model.universe.measure();
                     model.selected_configuration = None;
                 }
