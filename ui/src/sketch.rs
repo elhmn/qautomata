@@ -216,50 +216,7 @@ fn model(app: &App) -> Model {
 
 fn update(app: &App, model: &mut Model, _update: Update) {
     match model.state {
-        State::Drawing => match app.mouse.buttons.left() {
-            ButtonPosition::Up => {
-                if !matches!(model.draw_state, DrawState::NoClick) {
-                    model.draw_state = DrawState::NoClick;
-                }
-            }
-            ButtonPosition::Down(click_pos) => {
-                if matches!(model.draw_state, DrawState::NoClick) {
-                    model.draw_state = match get_cell_coordinates(click_pos, model) {
-                        Some(cell_coordinates) => {
-                            match model.universe.state[0].living_cells.get(&cell_coordinates) {
-                                Some(_) => DrawState::Deleting,
-                                None => DrawState::Creating,
-                            }
-                        }
-                        None => DrawState::NoDraw,
-                    };
-                }
-
-                if matches!(model.draw_state, DrawState::Creating | DrawState::Deleting) {
-                    let mouse_pos = app.mouse.position();
-
-                    if let Some(cell_coordinates) = get_cell_coordinates(&mouse_pos, model) {
-                        match model.universe.state[0].living_cells.get(&cell_coordinates) {
-                            Some(_) => {
-                                if matches!(model.draw_state, DrawState::Deleting) {
-                                    model.universe.state[0]
-                                        .living_cells
-                                        .remove(&cell_coordinates);
-                                }
-                            }
-                            None => {
-                                if matches!(model.draw_state, DrawState::Creating) {
-                                    model.universe.state[0]
-                                        .living_cells
-                                        .insert(cell_coordinates, false);
-                                }
-                            }
-                        };
-                        model.universe.compute_combined_state();
-                    };
-                }
-            }
-        },
+        State::Drawing => update_drawing(app, model),
         State::Running => {
             let frame_to_skip = 10;
             // Since we are unable to set the frame rate of the nannou app
@@ -280,6 +237,53 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     }
 
     update_ui(model);
+}
+
+fn update_drawing(app: &App, model: &mut Model) {
+    match app.mouse.buttons.left() {
+        ButtonPosition::Up => {
+            if !matches!(model.draw_state, DrawState::NoClick) {
+                model.draw_state = DrawState::NoClick;
+            }
+        }
+        ButtonPosition::Down(click_pos) => {
+            if matches!(model.draw_state, DrawState::NoClick) {
+                model.draw_state = match get_cell_coordinates(click_pos, model) {
+                    Some(cell_coordinates) => {
+                        match model.universe.state[0].living_cells.get(&cell_coordinates) {
+                            Some(_) => DrawState::Deleting,
+                            None => DrawState::Creating,
+                        }
+                    }
+                    None => DrawState::NoDraw,
+                };
+            }
+
+            if matches!(model.draw_state, DrawState::Creating | DrawState::Deleting) {
+                let mouse_pos = app.mouse.position();
+
+                if let Some(cell_coordinates) = get_cell_coordinates(&mouse_pos, model) {
+                    match model.universe.state[0].living_cells.get(&cell_coordinates) {
+                        Some(_) => {
+                            if matches!(model.draw_state, DrawState::Deleting) {
+                                model.universe.state[0]
+                                    .living_cells
+                                    .remove(&cell_coordinates);
+                            }
+                        }
+                        None => {
+                            if matches!(model.draw_state, DrawState::Creating) {
+                                model.universe.state[0]
+                                    .living_cells
+                                    .insert(cell_coordinates, false);
+                            }
+                        }
+                    };
+                    model.universe.compute_combined_state();
+                };
+            }
+        }
+    };
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
