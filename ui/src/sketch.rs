@@ -146,9 +146,10 @@ fn update_ui(model: &mut Model) {
                                 &mut model.selected_configuration,
                                 Some(row),
                                 format!(
-                                    "Configuration: {}, amplitude: {:.4}",
+                                    "Configuration: {}, amplitude: {:.4}, probability: {:.2}%",
                                     row + 1,
-                                    model.universe.state[row].amplitude
+                                    model.universe.state[row].amplitude,
+                                    model.universe.state[row].amplitude.norm_sqr() * 100.
                                 ),
                             );
                         });
