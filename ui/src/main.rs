@@ -13,16 +13,5 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-
-    let state_file = match args.state_file {
-        Some(path) => path,
-        None => {
-            println!(
-                "Please provide the path to the file containing the initial state of the universe"
-            );
-            return;
-        }
-    };
-
-    sketch::run(state_file);
+    sketch::run(args.state_file);
 }
