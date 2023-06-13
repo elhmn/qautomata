@@ -35,6 +35,7 @@ pub struct Model {
     pub cols: i32,
     pub rows: i32,
     pub auto_measure: bool,
+    pub show_rules_squares: bool,
     pub show_numbers: bool,
     pub universe_file: Option<String>,
     pub universe_measure_max: usize,
@@ -123,6 +124,7 @@ fn update_ui(model: &mut Model) {
             ui.separator();
             ui.label(format!("Step: {}", model.universe.step_count));
             ui.label(format!("Is even step: {}", model.universe.is_even_step));
+            ui.checkbox(&mut model.show_rules_squares, "Show rules squares");
             ui.separator();
             ui.label(format!(
                 "Configurations count: {}",
@@ -206,6 +208,7 @@ fn model(app: &App) -> Model {
         cols,
         rows,
         auto_measure: true,
+        show_rules_squares: false,
         show_numbers: false,
         universe_file,
         universe_measure_max: 128,
@@ -316,6 +319,10 @@ fn view(app: &App, model: &Model, frame: Frame) {
         }
     }
 
+    if m.show_rules_squares {
+        draw_rules_squares(&draw, m);
+    }
+
     // Write the result of our drawing to the window's frame.
     draw.to_frame(app, &frame).unwrap();
     ui_view(app, model, frame);
@@ -396,6 +403,38 @@ fn draw_configuration(i: i32, j: i32, configuration: &Configuration, gdraw: &Dra
                 .x_y(i as f32 * (m.block_size), j as f32 * (m.block_size))
                 .w_h(m.block_size, m.block_size);
         }
+    }
+}
+
+fn draw_rules_squares(draw: &Draw, m: &Model) {
+    let black = Color::new(0., 0., 0., 1.);
+    // Set the starting index depending on the step parity
+    // On even steps, we will draw lines on indexes 0/2/4/...
+    // On odd steps, we will draw lines on indexes 1/3/5/...
+    let s = if m.universe.is_even_step { 0 } else { 1 };
+
+    // Draw the vertical lines of the rules squares
+    let start_y = (m.rows as f32 / 2.) * m.block_size;
+    let end_y = -start_y;
+    for i in (s..(m.cols + 1)).step_by(2) {
+        let x = (i as f32 - (m.cols as f32 / 2.)) * m.block_size;
+        draw.line()
+            .start(pt2(x, start_y))
+            .end(pt2(x, end_y))
+            .weight(m.block_stroke * 3.)
+            .color(black);
+    }
+
+    // Draw the horizontal lines of the rules squares
+    let start_x = (m.cols as f32 / 2.) * m.block_size;
+    let end_x = -start_x;
+    for j in (s..(m.rows + 1)).step_by(2) {
+        let y = (j as f32 - (m.rows as f32 / 2.)) * m.block_size;
+        draw.line()
+            .start(pt2(start_x, y))
+            .end(pt2(end_x, y))
+            .weight(m.block_stroke * 3.)
+            .color(black);
     }
 }
 
