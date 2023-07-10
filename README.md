@@ -36,6 +36,12 @@ https://user-images.githubusercontent.com/11985913/232820455-15974aac-31ce-46e3-
 
 ### UI
 
+#### Draw
+If no state file is provided, draw living cells by clicking on dead cells or draw dead cells by clicking on living cells.
+
+##### Start button
+Button that starts the qautomata, only available while [drawing](#draw).
+
 #### Pause button
 Button that pauses the qautomata and give access to all other buttons.
 
@@ -50,7 +56,15 @@ Button that computes the next [step](#step) of the qautomata.
 
 #### Measure button
 Button that applies a [measure](#measure) to the qautomata.  
-An automatic [measure](#measure) is applied if there are more than 128 [configurations](#configuration) in the [global state](#global-state) after a [step](#step), we do this to limit the time complexity of the algorithm.
+
+#### Auto measure button
+Button to enable/disable the automatic [measure](#measure).
+
+##### Max superposed configurations before measure int
+Max number of [superposed](https://en.wikipedia.org/wiki/Quantum_superposition) [configurations](#configuration) after a [step](#step), if there is more (and [auto measure](#auto-measure-button) is on) an automatic [measure](#measure) is applied.
+
+#### Show rules squares
+Button to enable/disable the display of the rules squares.
 
 #### Show numbers button
 Button to enable/disable the display of the probabilities on the [combined state](#combined-state).
